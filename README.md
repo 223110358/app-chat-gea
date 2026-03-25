@@ -63,6 +63,8 @@ cp .env.example .env
 
 Configurar variables en `.env`:
 
+se debe de cambiar el nombre del env.example a solamente env y en este env meten el que les pase por whatsapp
+
 ```env
 MONGO_URI=tu_uri_de_mongodb
 JWT_SECRET=tu_clave_secreta
