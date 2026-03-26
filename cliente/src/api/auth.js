@@ -1,5 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ENV } from "../Utils";
+import { ENV } from "../Utils/constas.js";
 
 export class Auth {
     async register(email, password) {

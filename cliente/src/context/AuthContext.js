@@ -2,6 +2,7 @@ import { createContext, useEffect, useState } from "react";
 import { Auth, User } from "../api";
 import { hasExpiriedToken, initSockets } from "../Utils";
 
+
 const authController = new Auth();
 const userController = new User();
 export const AuthContext = createContext();
