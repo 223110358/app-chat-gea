@@ -3,28 +3,25 @@ import { Chat, ChatMessage } from "../models/index.js";
 async function create(req,res) {
     const {participant_id_one, participant_id_two}= req.body;
     try{
-        const foundOne=await Chat.findOne({
-            participant_one:participant_id_one,
-            participant_two:participant_id_two,
+        const existingChat = await Chat.findOne({
+            $or: [
+                { participant_one: participant_id_one, participant_two: participant_id_two },
+                { participant_one: participant_id_two, participant_two: participant_id_one },
+            ],
         });
-        if(foundOne){
-            return res.status(200).send({msg:"ya tienes un chat con este usuario"});
+
+        if (existingChat) {
+            return res.status(200).send(existingChat);
         }
-        const foundTwo = await Chat.findOne({
-            participant_one:participant_id_two,
-            participant_two:participant_id_one,
-        })
-        if(foundTwo){
-            return res.status(200).send({msg:"ya tienes un chat con este usuario"});
-        }
+
         const newChat = new Chat({
             participant_one:participant_id_one,
             participant_two:participant_id_two,
-        })
+        });
 
-        const chatStorage = await newChat.save()
-        res.status(200).send(chatStorage)
-    }catch(error){
+        const chatStorage = await newChat.save();
+        res.status(200).send(chatStorage);
+    } catch(error) {
         console.error("Error al crear el servidor",error)
         res.status(500).send({msg:"Error interno en el servidor"})
     }

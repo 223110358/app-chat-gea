@@ -24,19 +24,32 @@ async function send(req, res) {
 async function sendImage(req,res) {
     const {chat_id}= req.body;
     const {user_id}=req.user;
+    let imagePath;
+
+    if (req.files && req.files.image) {
+        imagePath = getFilePath(req.files.image);
+    } else if (req.body.image) {
+        // Caso en que se envía el path/direct link en el body (fallback)
+        imagePath = req.body.image;
+    }
+
+    if (!imagePath) {
+        return res.status(400).send({msg: "No se encontró archivo de imagen válido"});
+    }
+
     const chat_message= new ChatMessage({
         chat:chat_id,
         user:user_id,
-        message:getFilePath(req.files.image),
+        message:imagePath,
         type:"IMAGE"
     })
     try{
         await chat_message.save();
         const data = await chat_message.populate("user")
-        io.sockets.in(chat_id).emit("message",data);
-        io.sockets.in(`${chat_id}._notify`).emit("message_notify",data)
-        res.status(200).send({msg:"Mensaje con imagen enviado exitosamente"})
-    }catch(error){
+        io.sockets.in(chat_id).emit("message", data);
+        io.sockets.in(`${chat_id}_notify`).emit("message_notify", data);
+        res.status(200).send({ msg: "Mensaje con imagen enviado exitosamente", data });
+    } catch (error) {
         console.error("error al guardar el mensaje:",error);
         res.status(400).send({msg:"Error al enviar el mensaje con imagen",details:error.message})
     }
@@ -45,14 +58,30 @@ async function sendImage(req,res) {
 }
 
 async function getAll(req,res) {
-    const {chat_id}=req.params;
-    try{
-        const messages = await ChatMessage.find({chat:chat_id}).sort({
-            createAt: 1,
-        }).populate("user")
-        res.status(200).send({messages})
-    }catch(error){
-        res.status(500).send({msg:"Error en el servidor"})
+    const { chat_id } = req.params;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(10, Math.min(100, parseInt(req.query.limit, 10) || 30));
+
+    try {
+        const skip = (page - 1) * limit;
+        const total = await ChatMessage.countDocuments({ chat: chat_id });
+
+        const messages = await ChatMessage.find({ chat: chat_id })
+            .sort({ createdAt: 1 })
+            .skip(skip)
+            .limit(limit)
+            .populate("user");
+
+        res.status(200).send({
+            messages,
+            page,
+            limit,
+            total,
+            hasMore: skip + messages.length < total,
+        });
+    } catch (error) {
+        console.error("Error al obtener mensajes:", error);
+        res.status(500).send({ msg: "Error en el servidor" });
     }
 }
 async function getTotalMessage(req,res) {

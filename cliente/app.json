@@ -8,8 +8,17 @@
     "scheme": "chattarde",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "permissions": [
+      "android.permission.CAMERA",
+      "android.permission.READ_EXTERNAL_STORAGE",
+      "android.permission.WRITE_EXTERNAL_STORAGE"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Necesitamos acceso a tu cámara para enviar fotos",
+        "NSPhotoLibraryUsageDescription": "Necesitamos acceso a tu galería para enviar fotos"
+      }
     },
     "android": {
       "adaptiveIcon": {

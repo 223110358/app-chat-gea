@@ -1,9 +1,16 @@
 import express from "express"
 import multiparty from "connect-multiparty"
+import path from "path"
+import fs from "fs"
 import { ChatMessageController } from "../controllers/index.js"
 import { mdAuth } from "../middleware/index.js"
 
-const mdUpload= multiparty({uploadDir:"./uploads/image"})
+const imageUploadDir = path.join(process.cwd(), "uploads", "image")
+if (!fs.existsSync(imageUploadDir)) {
+    fs.mkdirSync(imageUploadDir, { recursive: true })
+}
+
+const mdUpload= multiparty({uploadDir:imageUploadDir})
 const api=express.Router();
 
 api.post("/chat/message",[mdAuth.asureAuth],ChatMessageController.send)

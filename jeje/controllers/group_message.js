@@ -12,11 +12,14 @@ async function sendText(req,res) {
         type:"TEXT"
     });
     try {
-        await group_message.save()
-        res.status(201).send({})
+        await group_message.save();
+        const data = await group_message.populate("user");
+        io.sockets.in(group_id).emit("message", data);
+        io.sockets.in(`${group_id}_notify`).emit("message_notify", data);
+        res.status(201).send({});
     } catch (error) {
-        console.error("Error al guardar el mensaje",error)
-        res.status(400).send({msg:"Error del servidor"})
+        console.error("Error al guardar el mensaje", error);
+        res.status(400).send({ msg: "Error del servidor" });
     }
 }
 
