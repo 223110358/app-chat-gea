@@ -1,32 +1,42 @@
 import { Chat, ChatMessage } from "../models/index.js";
 
-async function create(req,res) {
-    const {participant_id_one, participant_id_two}= req.body;
-    try{
-        const foundOne=await Chat.findOne({
-            participant_one:participant_id_one,
-            participant_two:participant_id_two,
+async function create(req, res) {
+    // participant_id_one viene del token JWT (el usuario logueado)
+    // participant_id_two viene del body (el usuario seleccionado)
+    const { user_id } = req.user;                        // <-- del token
+    const { participant_id_two } = req.body;             // <-- del frontend
+ 
+    if (!participant_id_two) {
+        return res.status(400).send({ msg: "participant_id_two es requerido" });
+    }
+ 
+    try {
+        const foundOne = await Chat.findOne({
+            participant_one: user_id,
+            participant_two: participant_id_two,
         });
-        if(foundOne){
-            return res.status(200).send({msg:"ya tienes un chat con este usuario"});
+        if (foundOne) {
+            return res.status(200).send(foundOne);  // devuelve el chat existente
         }
+ 
         const foundTwo = await Chat.findOne({
-            participant_one:participant_id_two,
-            participant_two:participant_id_one,
-        })
-        if(foundTwo){
-            return res.status(200).send({msg:"ya tienes un chat con este usuario"});
+            participant_one: participant_id_two,
+            participant_two: user_id,
+        });
+        if (foundTwo) {
+            return res.status(200).send(foundTwo);  // devuelve el chat existente
         }
+ 
         const newChat = new Chat({
-            participant_one:participant_id_one,
-            participant_two:participant_id_two,
-        })
-
-        const chatStorage = await newChat.save()
-        res.status(200).send(chatStorage)
-    }catch(error){
-        console.error("Error al crear el servidor",error)
-        res.status(500).send({msg:"Error interno en el servidor"})
+            participant_one: user_id,
+            participant_two: participant_id_two,
+        });
+ 
+        const chatStorage = await newChat.save();
+        res.status(200).send(chatStorage);
+    } catch (error) {
+        console.error("Error al crear el chat", error);
+        res.status(500).send({ msg: "Error interno en el servidor" });
     }
 }
 

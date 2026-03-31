@@ -15,6 +15,7 @@ export const ENV={
         USER:"user/",
         UPDATE_AVATAR:"user/me",
         UPDATE_USER:"user/me", // used for updating user details (name, etc.)
+        CHAT: "chat",
     },
     JWT:{
         ACCESS:"access",
