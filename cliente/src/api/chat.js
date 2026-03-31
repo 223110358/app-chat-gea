@@ -1,36 +1,16 @@
-// src/api/chat.js
 import { ENV } from "../Utils";
 
 export class Chat {
+
     /**
-     * Obtiene todos los chats del usuario autenticado.
-     * El backend filtra por user_id extraído del token JWT (req.user).
-     * Retorna arreglo de chats con participant_one y participant_two populados.
+     * Crear un chat
+     * El backend obtiene el usuario autenticado desde el token,
+     * por lo que solo necesitas enviar el otro participante
      */
-
-
-
-    async getAll(accessToken) {
+    async create(accessToken, participant_id_two) {
         try {
             const url = `${ENV.API_URL}/${ENV.ENDPOINTS.CHAT}`;
-            const params = {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            };
-            const response = await fetch(url, params);
-            const result = await response.json();
-            if (response.status !== 200) throw result;
-            return result;
-        } catch (error) {
-            throw error;
-        }
-    }
 
-        async create(accessToken, participant_id_two) {
-        try {
-            const url = `${ENV.API_URL}/${ENV.ENDPOINTS.CHAT}`;
             const params = {
                 method: "POST",
                 headers: {
@@ -39,13 +19,40 @@ export class Chat {
                 },
                 body: JSON.stringify({ participant_id_two }),
             };
+
             const response = await fetch(url, params);
             const result = await response.json();
+
             if (response.status !== 200) throw result;
+
             return result;
         } catch (error) {
             throw error;
         }
     }
-    
+
+    /**
+     * Obtener todos los chats del usuario autenticado
+     */
+    async getAll(accessToken) {
+        try {
+            const url = `${ENV.API_URL}/${ENV.ENDPOINTS.CHAT}`;
+
+            const params = {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            };
+
+            const response = await fetch(url, params);
+            const result = await response.json();
+
+            if (response.status !== 200) throw result;
+
+            return result;
+        } catch (error) {
+            throw error;
+        }
+    }
 }

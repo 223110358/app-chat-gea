@@ -1,4 +1,4 @@
-import { ENV } from "../Utils";
+import { ENV } from "../Utils/constas.js";
 
 export class User {
     async getMe(accesToken) {
