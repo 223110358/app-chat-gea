@@ -144,6 +144,7 @@ export const styles = StyleSheet.create({
         color: "#ffffff",
         fontSize: 15,
         maxHeight: 120,
+        marginLeft: 6,
     },
     sendButton: {
         width: 42,

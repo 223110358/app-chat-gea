@@ -9,12 +9,16 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    Alert,
 } from "react-native";
 import { Avatar } from "native-base";
+import * as ImagePicker from "expo-image-picker";
 import { ChatMessage } from "../../api";
 import { useAuth } from "../../hooks";
 import { ENV } from "../../Utils/constas.js";
 import { styles } from "./ChatScreen.styles.js";
+import { FloatingMenu } from "../../components/Chat/FloatingMenu.js";
+import { ImagePreviewModal } from "../../components/Chat/ImagePreviewModal.js";
 
 const chatMessageController = new ChatMessage();
 
@@ -27,6 +31,11 @@ export function ChatScreen() {
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState("");
     const flatListRef = useRef(null);
+
+    // Estado para el modal de preview de imagen
+    const [previewModalVisible, setPreviewModalVisible] = useState(false);
+    const [selectedImageUri, setSelectedImageUri] = useState(null);
+    const [isSendingImage, setIsSendingImage] = useState(false);
 
     useEffect(() => {
         navigation.setOptions({
@@ -94,6 +103,79 @@ export function ChatScreen() {
         } catch (error) {
             console.error("Error al enviar mensaje:", error);
         }
+    };
+
+    const handleCameraPress = async () => {
+        const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.7,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            setSelectedImageUri(result.assets[0].uri);
+            setPreviewModalVisible(true);
+        }
+    };
+
+    const handleGalleryPress = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.7,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            setSelectedImageUri(result.assets[0].uri);
+            setPreviewModalVisible(true);
+        }
+    };
+
+    const sendImage = async (imageUri) => {
+        try {
+            // Mostrar la imagen localmente para responsive UX
+            const tempMessage = {
+                _id: Date.now().toString(),
+                message: imageUri,
+                type: "IMAGE",
+                user: { _id: user._id },
+                createdAt: new Date(),
+            };
+            setMessages((prev) => [tempMessage, ...prev]);
+
+            // Enviar imagen al backend
+            await chatMessageController.sendImage(accessToken, chatId, imageUri);
+
+            // Recargar mensajes reales desde servidor
+            await loadMessages();
+
+            Alert.alert("Imagen enviada", "La imagen se ha enviado correctamente");
+        } catch (error) {
+            console.error("Error al enviar imagen:", error);
+            Alert.alert("Error", "No se pudo enviar la imagen");
+        }
+    };
+
+    const handleSendImage = async () => {
+        if (!selectedImageUri) return;
+
+        setIsSendingImage(true);
+        try {
+            await sendImage(selectedImageUri);
+            setPreviewModalVisible(false);
+            setSelectedImageUri(null);
+        } catch (error) {
+            console.error("Error al enviar imagen:", error);
+        } finally {
+            setIsSendingImage(false);
+        }
+    };
+
+    const handleCancelPreview = () => {
+        setPreviewModalVisible(false);
+        setSelectedImageUri(null);
     };
 
     const renderMessage = ({ item, index }) => {
@@ -212,10 +294,11 @@ export function ChatScreen() {
 
             {/* Input de mensaje */}
             <View style={styles.inputContainer}>
-                {/* Botón imagen (solo diseño) */}
-                <TouchableOpacity style={styles.iconButton}>
-                    <Text style={styles.iconText}>📎</Text>
-                </TouchableOpacity>
+                {/* Menú flotante */}
+                <FloatingMenu
+                    onCameraPress={handleCameraPress}
+                    onGalleryPress={handleGalleryPress}
+                />
 
                 <TextInput
                     style={styles.input}
@@ -238,6 +321,15 @@ export function ChatScreen() {
                     <Text style={styles.sendIcon}>➤</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Modal de preview de imagen */}
+            <ImagePreviewModal
+                visible={previewModalVisible}
+                imageUri={selectedImageUri}
+                onSend={handleSendImage}
+                onCancel={handleCancelPreview}
+                isLoading={isSendingImage}
+            />
         </KeyboardAvoidingView>
     );
 }
