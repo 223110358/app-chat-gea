@@ -1,33 +1,30 @@
 import { StyleSheet } from "react-native";
 
-export const styles = StyleSheet.create({
+export const createStyles = (colors) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#111318",
+        backgroundColor: colors.background,
     },
-
-    // Header
     headerTitle: {
         flexDirection: "row",
         alignItems: "center",
     },
     headerName: {
-        color: "#ffffff",
+        color: colors.text,
         fontSize: 16,
-        fontWeight: "600",
+        fontWeight: "700",
     },
     headerStatus: {
-        color: "#4ade80",
+        color: colors.primary,
         fontSize: 11,
     },
-
-    // Lista de mensajes
     messagesList: {
+        width: "100%",
+        maxWidth: 860,
+        alignSelf: "center",
         paddingHorizontal: 12,
         paddingVertical: 16,
     },
-
-    // Filas
     messageRow: {
         flexDirection: "row",
         alignItems: "flex-end",
@@ -39,14 +36,10 @@ export const styles = StyleSheet.create({
     otherRow: {
         justifyContent: "flex-start",
     },
-
-    // Avatar
     avatarContainer: {
         marginRight: 6,
         marginBottom: 2,
     },
-
-    // Burbujas
     bubble: {
         maxWidth: "72%",
         borderRadius: 18,
@@ -55,93 +48,67 @@ export const styles = StyleSheet.create({
         marginVertical: 1,
     },
     myBubble: {
-        backgroundColor: "#2f6feb",
+        backgroundColor: colors.bubbleMine,
         borderBottomRightRadius: 4,
     },
     otherBubble: {
-        backgroundColor: "#1e2029",
+        backgroundColor: colors.bubbleOther,
         borderBottomLeftRadius: 4,
         borderWidth: 1,
-        borderColor: "#2a2d38",
+        borderColor: colors.border,
     },
     imageBubble: {
         padding: 4,
         backgroundColor: "transparent",
     },
-
-    // Texto mensajes
     messageText: {
         fontSize: 15,
         lineHeight: 21,
+        color: colors.text,
     },
     myText: {
-        color: "#ffffff",
+        color: colors.primaryText,
     },
     otherText: {
-        color: "#d1d5db",
+        color: colors.text,
     },
-
-    // Hora
     timeText: {
         fontSize: 10,
         marginTop: 4,
         alignSelf: "flex-end",
     },
     myTime: {
-        color: "rgba(255,255,255,0.45)",
+        color: "rgba(255,255,255,0.7)",
     },
     otherTime: {
-        color: "rgba(255,255,255,0.25)",
+        color: colors.muted,
     },
-
-    // Imagen en mensaje
     messageImage: {
         width: 220,
         height: 180,
         borderRadius: 14,
     },
-
-    // Separador de fecha
-    dateSeparator: {
-        alignItems: "center",
-        marginVertical: 12,
-    },
-    dateSeparatorText: {
-        color: "#4b5263",
-        fontSize: 11,
-        backgroundColor: "#1a1c23",
-        paddingHorizontal: 12,
-        paddingVertical: 4,
-        borderRadius: 10,
-    },
-
-    // Input
     inputContainer: {
+        width: "100%",
+        maxWidth: 860,
+        alignSelf: "center",
         flexDirection: "row",
         alignItems: "flex-end",
         paddingHorizontal: 10,
         paddingVertical: 10,
-        backgroundColor: "#111318",
+        backgroundColor: colors.background,
         borderTopWidth: 1,
-        borderTopColor: "#1e2029",
-    },
-    iconButton: {
-        width: 40,
-        height: 40,
-        justifyContent: "center",
-        alignItems: "center",
-        marginRight: 6,
-    },
-    iconText: {
-        fontSize: 20,
+        borderTopColor: colors.border,
     },
     input: {
         flex: 1,
-        backgroundColor: "#1e2029",
-        borderRadius: 22,
+        backgroundColor: colors.input,
+        borderColor: colors.border,
+        borderWidth: 1,
+        borderRadius: 8,
         paddingHorizontal: 16,
         paddingVertical: 10,
-        color: "#ffffff",
+        color: colors.text,
         fontSize: 15,
         maxHeight: 120,
         marginLeft: 6,
@@ -149,17 +116,17 @@ export const styles = StyleSheet.create({
     sendButton: {
         width: 42,
         height: 42,
-        borderRadius: 21,
-        backgroundColor: "#2f6feb",
+        borderRadius: 8,
+        backgroundColor: colors.primary,
         justifyContent: "center",
         alignItems: "center",
         marginLeft: 8,
     },
     sendButtonDisabled: {
-        backgroundColor: "#1e2029",
+        backgroundColor: colors.surfaceAlt,
     },
     sendIcon: {
-        color: "#ffffff",
+        color: colors.primaryText,
         fontSize: 16,
     },
 });

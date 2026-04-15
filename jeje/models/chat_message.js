@@ -13,7 +13,13 @@ const ChatMessageSchema = mongoose.Schema({
     type: {
         type: String,
         enum: ["TEXT", "IMAGE"],
-    }
+    },
+    read_by: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+        },
+    ],
 
 }, {
     timestamps: true

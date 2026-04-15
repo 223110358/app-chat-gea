@@ -1,9 +1,10 @@
-import { Text, View } from "react-native";
+import { EmptyState } from "../../components/EmptyState";
 
 export function CameraScreen() {
-    return(
-        <View>
-            <Text>CameraScreen</Text>
-        </View>
-    )
+    return (
+        <EmptyState
+            title="Camara"
+            description="Captura una imagen para compartirla en el chat."
+        />
+    );
 }

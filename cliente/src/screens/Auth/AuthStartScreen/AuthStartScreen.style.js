@@ -1,36 +1,62 @@
 import { StyleSheet } from "react-native";
 
-export const styles = StyleSheet.create({
+export const createStyles = (colors) => StyleSheet.create({
+    screen: {
+        flex: 1,
+        backgroundColor: colors.background,
+    },
     content: {
         flex: 1,
-        margin:20,
-        marginTop:0,
+        width: "100%",
+        maxWidth: 860,
+        alignSelf: "center",
         justifyContent: "center",
+        paddingHorizontal: 22,
+        paddingVertical: 28,
     },
     img: {
         width: "100%",
-        height: 400,
+        height: 320,
         resizeMode: "contain",
-        marginVertical:20,
+        marginBottom: 24,
     },
-    title:{
-        color:"#1a4705",
-        textAlign:"center",
-        fontSize:28,
-        fontWeight:"bold",
-        marginBottom:20,
-
+    copy: {
+        width: "100%",
+        maxWidth: 520,
+        alignSelf: "center",
     },
-    description:{
-        color:"#ffffff",
-        opacity:0.6,
-        textAlign:"center",
-        marginBottom:35,
+    eyebrow: {
+        color: colors.primary,
+        textAlign: "center",
+        fontSize: 14,
+        fontWeight: "800",
+        marginBottom: 8,
     },
-    btn:{
-        color:"#1a4705",
-        fontWeight:"600",
-        fontSize:22,
-        textAlign:"center",
-    }
+    title: {
+        color: colors.text,
+        textAlign: "center",
+        fontSize: 30,
+        fontWeight: "800",
+        marginBottom: 12,
+    },
+    description: {
+        color: colors.muted,
+        textAlign: "center",
+        fontSize: 16,
+        lineHeight: 22,
+        marginBottom: 24,
+    },
+    btn: {
+        minHeight: 48,
+        borderRadius: 8,
+        backgroundColor: colors.primary,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingHorizontal: 18,
+    },
+    btnText: {
+        color: colors.primaryText,
+        fontWeight: "800",
+        fontSize: 16,
+    },
 });

@@ -1,5 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { useTheme } from "../../hooks";
 import { screens } from "../../Utils";
 import {
     ChatsNavigation,
@@ -11,13 +12,20 @@ import { styles } from "./BottomTabNavigation.styles";
 const Tab = createBottomTabNavigator();
 
 export function BottomTabNavigation() {
+  const { colors } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarStyle: styles.tabBarStyle,
-        tabBarActiveTintColor: "#1a4705",
-        tabBarInactiveTintColor: "#1a4705",
+        tabBarStyle: [
+          styles.tabBarStyle,
+          {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+          },
+        ],
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.muted,
         tabBarIcon: ({ color, size }) => screensIcon(route, color, size),
       })}
     >

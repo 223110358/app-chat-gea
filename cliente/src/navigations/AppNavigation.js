@@ -11,13 +11,16 @@ import {
   GroupProfileScreen,
   GroupScreen
 } from "../screens/Groups";
+import { useTheme } from "../hooks";
 import { screens } from "../Utils";
 import { BottomTabNavigation } from "./BottomTabNavigation";
-import { styles } from "./Styles.styles";
+import { createNavigationStyles } from "./Styles.styles";
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigation() {
+  const { colors } = useTheme();
+  const styles = createNavigationStyles(colors);
   return (
     <Stack.Navigator>
       <Stack.Screen

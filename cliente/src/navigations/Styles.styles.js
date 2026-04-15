@@ -1,24 +1,24 @@
 import { StyleSheet } from "react-native";
 
-export const styles = StyleSheet.create({
+export const createNavigationStyles = (colors) => StyleSheet.create({
     stackContent: {
-        backgroundColor: "#000000",
+        backgroundColor: colors.background,
     },
     stackHeader: {
-        backgroundColor: "#000000",
+        backgroundColor: colors.surface,
     },
     stackHeaderTitle: {
-        color: "#1a4705",
+        color: colors.text,
     },
     modalContent: {
-        backgroundColor: "#1b28b3",
+        backgroundColor: colors.background,
 
     },
     modalHeader: {
-        backgroundColor: "#ee00de",
+        backgroundColor: colors.surface,
     },
     modalHeaderTitle: {
-        color: "#ab1e1c",
+        color: colors.text,
     },
 
 });

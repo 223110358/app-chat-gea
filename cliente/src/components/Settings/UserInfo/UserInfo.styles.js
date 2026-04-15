@@ -1,23 +1,29 @@
 import { StyleSheet } from "react-native";
 
-export const styles = new StyleSheet.create({
+export const createStyles = (colors) => StyleSheet.create({
   content: {
     alignItems: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 28,
+    marginTop: 20,
   },
   avatar: {
-    marginTop: 40,
+    marginBottom: 18,
   },
-  identify:{
-    color: "white",
-    fontSize:26,
-    fontWeight:"bold",
-    marginTop:20,
+  identify: {
+    color: colors.text,
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center",
   },
-  email:{
-    color:"white",
-    fontSize:16,
-    marginTop:10,
-    opacity:0.6,
-  }
-
+  email: {
+    color: colors.muted,
+    fontSize: 15,
+    marginTop: 8,
+    textAlign: "center",
+  },
 });

@@ -1,9 +1,10 @@
-import { Text, View } from "react-native";
+import { EmptyState } from "../../components/EmptyState";
 
 export function GroupsScreen() {
-    return(
-        <View>
-            <Text style={{color:"#ffffff"}}>GroupsScreen</Text>
-        </View>
-    )
+    return (
+        <EmptyState
+            title="Grupos"
+            description="Organiza tus conversaciones grupales desde este modulo."
+        />
+    );
 }

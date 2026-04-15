@@ -1,0 +1,169 @@
+BITACORA DE MODULOS
+
+Funcionalidad: Lista de chats
+Objetivo:
+Queria que la pantalla principal de chats mostrara mis conversaciones reales y no se quedara como una vista incompleta. La idea era tener una lista clara de contactos, ultimo mensaje, contador de no leidos y acciones basicas para trabajar rapido desde Expo Web.
+Prompt usado:
+"Necesito corregir la navegacion de Nuevo Chat, agregar filtros de no leidos, ordenamiento, eliminar chats, ultimo mensaje y buscador de chats."
+Respuesta IA (resumen):
+La IA encontro que la lista necesitaba datos extra desde el backend y que la navegacion estaba mandando parametros incompletos. Tambien recomendo mejorar la lista con estados locales para busqueda, filtro y ordenamiento.
+Implementacion:
+* Codigo usado: se actualizo ChatsScreen, ChatItem, la API de chat y el controlador de chats del backend.
+* Librerias utilizadas: React Native, React Navigation, NativeBase, Express y Mongoose.
+Problemas encontrados:
+* La lista no tenia ultimo mensaje ni contador de no leidos.
+* La navegacion de cada chat no mandaba todos los datos necesarios.
+* La eliminacion en Expo Web no funcionaba bien con Alert.alert.
+Como lo resolvieron:
+* Se agregaron last_message, last_message_date y unread_count en GET /api/chat.
+* Se cambio ChatItem para navegar al stack padre con la informacion completa de otherUser.
+* Se uso window.confirm en web para confirmar eliminacion.
+Aprendizaje:
+Entendi que una lista de chats no debe depender solo del frontend; el backend tiene que entregar datos preparados para que la pantalla sea rapida y confiable.
+
+Funcionalidad: Ultimo mensaje
+Objetivo:
+Mostrar en cada chat el mensaje mas reciente para saber rapidamente de que trato la ultima conversacion.
+Prompt usado:
+"Tambien que se puedan aplicar filtros de este tipo, no leidos, ordenamiento de chats, eliminar chats, ultimo mensaje, y por ultimo un buscador de chats."
+Respuesta IA (resumen):
+La IA explico que el ultimo mensaje debia calcularse desde backend consultando ChatMessage por chat y ordenando por createdAt.
+Implementacion:
+* Codigo usado: en el backend se busca el ultimo ChatMessage de cada chat y se envia como last_message.
+* Librerias utilizadas: Mongoose para consultar y ordenar mensajes.
+Problemas encontrados:
+* El codigo usaba createAt/createat, pero Mongoose genera createdAt cuando timestamps esta activo.
+Como lo resolvieron:
+* Se cambio el ordenamiento a createdAt.
+* Se mando last_message_date para ordenar y mostrar la hora.
+Aprendizaje:
+Aprendi que los nombres exactos de campos importan mucho, especialmente cuando son generados automaticamente por Mongoose.
+
+Funcionalidad: No leidos
+Objetivo:
+Poder identificar chats con mensajes pendientes y filtrar solo los no leidos.
+Prompt usado:
+"Quiero filtros de no leidos y que la lista de chats muestre lo importante."
+Respuesta IA (resumen):
+La IA propuso agregar un arreglo read_by en los mensajes para saber que usuarios ya los leyeron.
+Implementacion:
+* Codigo usado: se agrego read_by al modelo ChatMessage y unread_count al endpoint de chats.
+* Librerias utilizadas: Mongoose.
+Problemas encontrados:
+* Antes no existia ningun estado de lectura.
+Como lo resolvieron:
+* Al enviar un mensaje se agrega el usuario emisor a read_by.
+* Al abrir un chat se marcan como leidos los mensajes del otro usuario.
+Aprendizaje:
+Entendi que "no leidos" no es solo un filtro visual; necesita datos persistentes en la base de datos.
+
+Funcionalidad: Ordenamiento
+Objetivo:
+Ordenar chats por actividad reciente o por antiguos primero para revisar conversaciones de manera flexible.
+Prompt usado:
+"Tambien que se puedan aplicar filtros de este tipo... ordenamiento de chats."
+Respuesta IA (resumen):
+La IA recomendo ordenar usando last_message_date para que el orden reflejara la actividad real del chat.
+Implementacion:
+* Codigo usado: se agrego sortOrder en ChatsScreen y se ordena visibleChats.
+* Librerias utilizadas: React Native y hooks de React.
+Problemas encontrados:
+* Los chats sin mensajes no tenian fecha.
+Como lo resolvieron:
+* Se uso 0 como fecha base cuando no existe last_message_date.
+Aprendizaje:
+Aprendi a separar los datos originales de la lista visible filtrada y ordenada.
+
+Funcionalidad: Eliminacion
+Objetivo:
+Permitir eliminar un chat y sus mensajes asociados.
+Prompt usado:
+"Los chats aun no se eliminan."
+Respuesta IA (resumen):
+La IA detecto que en Expo Web la confirmacion con Alert.alert podia fallar y propuso usar window.confirm solo cuando Platform.OS es web.
+Implementacion:
+* Codigo usado: se agrego delete en la API del cliente y se reforzo deleteChat en backend.
+* Librerias utilizadas: React Native Platform, fetch, Express y Mongoose.
+Problemas encontrados:
+* La confirmacion no ejecutaba el callback en web.
+* El backend eliminaba el chat, pero no estaba protegiendo bien que el usuario fuera participante.
+Como lo resolvieron:
+* Se usa window.confirm en web.
+* Se valida que el chat pertenezca al usuario autenticado.
+* Se eliminan los mensajes del chat con deleteMany.
+Aprendizaje:
+Aprendi que Expo Web puede necesitar ajustes especificos aunque el mismo codigo funcione en movil.
+
+Funcionalidad: Buscador
+Objetivo:
+Encontrar conversaciones por nombre, correo o texto del ultimo mensaje.
+Prompt usado:
+"Por ultimo un buscador de chats."
+Respuesta IA (resumen):
+La IA recomendo construir un texto de busqueda con los campos principales de cada chat.
+Implementacion:
+* Codigo usado: se agrego searchText y se filtra visibleChats con includes.
+* Librerias utilizadas: React hooks y componentes base de React Native.
+Problemas encontrados:
+* Algunos usuarios no tenian nombre completo.
+Como lo resolvieron:
+* Se uso email como fallback cuando firstname/lastname no existen.
+Aprendizaje:
+Entendi que un buscador debe considerar datos incompletos para no romper la experiencia.
+
+Funcionalidad: Sockets (recepcion global)
+Objetivo:
+Actualizar la lista de chats cuando llegue un mensaje nuevo sin tener que recargar manualmente.
+Prompt usado:
+"La lista completa incluye Sockets (recepcion global), estado global, optimizacion de listas y UX."
+Respuesta IA (resumen):
+La IA propuso suscribirse a las salas de notificacion de cada chat desde ChatsScreen y refrescar la lista cuando llegue message_notify.
+Implementacion:
+* Codigo usado: ChatsScreen se suscribe a salas chatId_notify y escucha message_notify.
+* Librerias utilizadas: socket.io-client y React useEffect.
+Problemas encontrados:
+* El socket ya estaba inicializado globalmente, pero la lista no escuchaba notificaciones.
+Como lo resolvieron:
+* Se reutilizo el socket global y se agrego limpieza de suscripciones al desmontar/cambiar lista.
+Aprendizaje:
+Aprendi que los sockets no solo sirven dentro de la pantalla del chat; tambien sirven para mantener actualizada la lista principal.
+
+Funcionalidad: Navegacion hacia chat
+Objetivo:
+Que al dar click en un chat existente se abra directamente la conversacion con esa persona.
+Prompt usado:
+"Me gustaria que al dar click en un chat que ya existe, nos mande directamente al chat de la persona no a la lista de chats."
+Respuesta IA (resumen):
+La IA detecto que ChatScreen vive en el stack padre y que ChatItem estaba navegando desde un stack hijo.
+Implementacion:
+* Codigo usado: en ChatItem se usa navigation.getParent()?.navigate para abrir ChatScreen con chatId y otherUser.
+* Librerias utilizadas: React Navigation.
+Problemas encontrados:
+* La pantalla ChatScreen no pertenece directamente al stack de ChatsNavigation.
+Como lo resolvieron:
+* Se navega explicitamente desde el stack padre cuando existe.
+* Se agrego la bandera already_exists en el backend para distinguir si el chat ya existia o si se acaba de crear.
+* Desde Nuevo Chat, si already_exists es true se abre la conversacion; si es false se regresa a la lista de chats.
+Aprendizaje:
+Aprendi que en navegacion anidada no siempre basta con navigate(nombrePantalla); a veces hay que navegar desde el padre correcto. Tambien entendi que el frontend no puede adivinar si un chat ya existia si el backend no devuelve esa informacion.
+
+Funcionalidad: Diseno profesional y responsivo
+Objetivo:
+Queria que la pantalla de chats se viera mas profesional para la entrega escolar, pensando primero en vista movil pero sin que se rompiera en navegador de escritorio usando Expo Web.
+Prompt usado:
+"Deseo darle un diseno profesional, y ligeramente responsivo, mas orientado a movil, pero que tambien se pueda usar en version de escritorio de navegadores."
+Respuesta IA (resumen):
+La IA propuso mejorar la presentacion de la lista con contenedores de ancho maximo, tarjetas simples, buscador oscuro, filtros mas claros y colores menos improvisados en los modales.
+Implementacion:
+* Codigo usado: se ajustaron estilos en ChatsScreen, ChatItem, ListUsers, Search y estilos globales de navegacion.
+* Librerias utilizadas: React Native StyleSheet, React Navigation y NativeBase para algunos iconos/avatar.
+Problemas encontrados:
+* El proyecto tenia colores de prueba muy fuertes en modales.
+* En escritorio la lista podia estirarse demasiado y perder lectura.
+* La pantalla "Nuevo Chat" no compartia el mismo estilo visual que la lista principal.
+Como lo resolvieron:
+* Se agrego maxWidth de 760 para que la vista funcione bien en escritorio.
+* Se conservaron filas grandes y faciles de tocar para movil.
+* Se cambio la paleta a fondo oscuro neutro, bordes sutiles y acentos verdes/rojos para estados.
+Aprendizaje:
+Entendi que hacer algo responsivo en Expo Web no siempre implica cambiar toda la app; a veces basta con limitar anchos, cuidar espacios y mantener los elementos tactiles comodos para movil.

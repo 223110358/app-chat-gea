@@ -1,32 +1,57 @@
-// src/components/Chat/ChatList/ChatItem.js
 import { useNavigation } from "@react-navigation/native";
+import { memo } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useTheme } from "../../../hooks";
 import { ENV, screens } from "../../../Utils";
 
-export function ChatItem({ chat, currentUserId }) {
-    const navigation = useNavigation();
+function navigateFromRoot(navigation, screen, params) {
+    let navigator = navigation;
+    let parent = navigation.getParent?.();
 
-    /**
-     * El backend popula ambos participantes.
-     * Determinamos quién es el "otro" comparando _id con el usuario actual.
-     * Esto es necesario porque el chat puede tener al usuario como participant_one O participant_two.
-     */
+    while (parent) {
+        navigator = parent;
+        parent = parent.getParent?.();
+    }
+
+    navigator.navigate(screen, params);
+}
+
+function ChatItemComponent({ chat, currentUserId, onDelete }) {
+    const navigation = useNavigation();
+    const { colors } = useTheme();
+    const styles = createStyles(colors);
     const otherUser =
         chat.participant_one._id === currentUserId
             ? chat.participant_two
             : chat.participant_one;
 
     const avatarUri = otherUser.avatar
-        ? `${ENV.BASE_PATH}/${otherUser.avatar}`
+        ? `${ENV.BASE_PATH}/uploads/${otherUser.avatar}`
         : null;
+    const lastMessage = chat.last_message;
+    const lastMessageText = lastMessage
+        ? lastMessage.type === "IMAGE"
+            ? "Imagen"
+            : lastMessage.message
+        : "Sin mensajes todavia";
+    const lastMessageDate = chat.last_message_date
+        ? new Date(chat.last_message_date).toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+        })
+        : "";
+    const displayName = `${otherUser.firstname || ""} ${otherUser.lastname || ""}`.trim()
+        || otherUser.email;
 
     const handlePress = () => {
-        navigation.navigate(screens.global.chatScreen, { chatId: chat._id, userId: otherUser._id });
+        navigateFromRoot(navigation, screens.global.chatScreen, {
+            chatId: chat._id,
+            otherUser,
+        });
     };
 
     return (
         <TouchableOpacity style={styles.container} onPress={handlePress}>
-            {/* Avatar del otro participante */}
             <View style={styles.avatarWrapper}>
                 {avatarUri ? (
                     <Image source={{ uri: avatarUri }} style={styles.avatar} />
@@ -39,25 +64,46 @@ export function ChatItem({ chat, currentUserId }) {
                 )}
             </View>
 
-            {/* Nombre del contacto */}
             <View style={styles.info}>
-                <Text style={styles.name}>
-                    {otherUser.firstname} {otherUser.lastname}
-                </Text>
-                <Text style={styles.email}>{otherUser.email}</Text>
+                <Text style={styles.name}>{displayName}</Text>
+                <Text style={styles.email} numberOfLines={1}>{lastMessageText}</Text>
+            </View>
+            <View style={styles.meta}>
+                <Text style={styles.time}>{lastMessageDate}</Text>
+                {chat.unread_count > 0 ? (
+                    <View style={styles.unreadBadge}>
+                        <Text style={styles.unreadText}>{chat.unread_count}</Text>
+                    </View>
+                ) : null}
+                <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={(event) => {
+                        event.stopPropagation?.();
+                        onDelete(chat);
+                    }}
+                >
+                    <Text style={styles.deleteText}>Eliminar</Text>
+                </TouchableOpacity>
             </View>
         </TouchableOpacity>
     );
 }
 
-const styles = StyleSheet.create({
+export const ChatItem = memo(ChatItemComponent);
+
+const createStyles = (colors) => StyleSheet.create({
     container: {
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: 16,
+        minHeight: 78,
+        paddingHorizontal: 14,
         paddingVertical: 12,
-        borderBottomWidth: 1,
-        borderBottomColor: "#1a1a1a",
+        marginHorizontal: 12,
+        marginVertical: 5,
+        borderRadius: 8,
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
     avatarWrapper: {
         marginRight: 14,
@@ -71,12 +117,12 @@ const styles = StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 25,
-        backgroundColor: "#1a4705",
+        backgroundColor: colors.primaryStrong,
         justifyContent: "center",
         alignItems: "center",
     },
     avatarLetter: {
-        color: "#ffffff",
+        color: colors.primaryText,
         fontSize: 20,
         fontWeight: "bold",
     },
@@ -84,13 +130,49 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     name: {
-        color: "#ffffff",
+        color: colors.text,
         fontSize: 16,
-        fontWeight: "600",
+        fontWeight: "700",
     },
     email: {
-        color: "#888888",
+        color: colors.muted,
         fontSize: 13,
         marginTop: 2,
+    },
+    meta: {
+        alignItems: "flex-end",
+        marginLeft: 8,
+    },
+    time: {
+        color: colors.muted,
+        fontSize: 11,
+        minHeight: 14,
+    },
+    unreadBadge: {
+        minWidth: 22,
+        height: 22,
+        borderRadius: 11,
+        backgroundColor: colors.primary,
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 4,
+    },
+    unreadText: {
+        color: colors.primaryText,
+        fontSize: 12,
+        fontWeight: "700",
+    },
+    deleteButton: {
+        marginTop: 6,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 6,
+        borderWidth: 1,
+        borderColor: colors.danger,
+    },
+    deleteText: {
+        color: colors.danger,
+        fontSize: 11,
+        fontWeight: "700",
     },
 });

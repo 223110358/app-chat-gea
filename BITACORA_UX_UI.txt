@@ -1,0 +1,37 @@
+BITACORA UX / UI
+
+Funcionalidad: Diseno general responsivo y tema claro/oscuro
+Objetivo:
+Queria mejorar la experiencia visual de toda la app, desde la bienvenida, login y registro, hasta chats, nuevo chat, conversacion y perfil. El objetivo era que se viera mas profesional para Expo Web, pero manteniendo una estructura orientada a movil y sin romper la logica existente.
+
+Prompt usado:
+"Podemos aplicar el diseno profesional y responsivo tanto para movil como para escritorio, pero a toda la pagina completa, a todo desde antes de hacer login y registro, hasta los mismos formularios, y toda la parte despues de hacer login, como chats, nuevo chat, y perfil, porfavor?, sin romper absolutamente nada del funcionamiento logico, y de ser posible colocar la funcion de tema claro y oscuro."
+
+Respuesta IA (resumen):
+La IA propuso separar el trabajo visual de la logica funcional, crear un contexto de tema compartido, usar estilos dinamicos por pantalla y mantener anchos maximos para que Expo Web no estirara demasiado las vistas. Tambien sugirio agregar el cambio de tema desde Ajustes.
+
+Implementacion:
+* Codigo usado: se creo ThemeContext y useTheme para manejar colores claros/oscuros.
+* Codigo usado: se envolvio la app con ThemeProvider en App.js.
+* Codigo usado: se actualizaron pantallas de bienvenida, login, registro, chats, nuevo chat, conversacion y ajustes/perfil.
+* Codigo usado: se agrego un boton en Ajustes para alternar entre tema claro y tema oscuro.
+* Codigo usado: se crearon estados visuales reutilizables para pantallas todavia incompletas.
+* Librerias utilizadas: React, React Native, React Navigation, NativeBase, Expo Image Picker y @expo/vector-icons.
+
+Problemas encontrados:
+* Varias pantallas tenian colores fijos y no podian adaptarse a un tema.
+* Algunas vistas se veian demasiado extendidas en navegador de escritorio.
+* Los formularios tenian inputs oscuros fijos incluso si despues se agregaba tema claro.
+* Algunas pantallas placeholder parecian incompletas o rotas visualmente.
+* El menu de adjuntos tenia textos con codificacion rara y colores fijos.
+
+Como lo resolvieron:
+* Se creo una paleta central con background, surface, border, text, muted, primary y danger.
+* Se agrego maxWidth en vistas principales para que funcionen en escritorio sin perder enfoque movil.
+* Se mantuvieron botones y filas con alto tactil comodo para uso movil.
+* Se reemplazaron estilos fijos por createStyles(colors) donde era mas importante.
+* Se agrego un EmptyState reutilizable para modulos incompletos.
+* Se agrego el cambio de tema desde el modulo de Ajustes.
+
+Aprendizaje:
+Entendi que mejorar UX/UI no significa rehacer toda la app. Primero se centralizan decisiones visuales, luego se aplican en las pantallas mas importantes y se cuida que el diseno no interfiera con la navegacion, formularios, tokens o llamadas al backend. Tambien aprendi que una app en Expo Web necesita limites de ancho y estados vacios claros para verse bien en escritorio.

@@ -1,9 +1,9 @@
 import express from "express";
 import multiparty from "connect-multiparty";
-import { GroupController, GroupMessageController} from "../controllers/index.js";
+import { GroupMessageController} from "../controllers/index.js";
 import { mdAuth } from "../middleware/index.js";
 
-const mdUpload = multiparty({mdUploadDir:"./uploads/images"});
+const mdUpload = multiparty({uploadDir:"./uploads/images"});
 
 const api=express.Router();
 api.post("/group/message",[mdAuth.asureAuth],GroupMessageController.sendText);

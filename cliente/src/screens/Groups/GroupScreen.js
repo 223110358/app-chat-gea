@@ -1,9 +1,10 @@
-import { Text, View } from "react-native";
+import { EmptyState } from "../../components/EmptyState";
 
 export function GroupScreen() {
-    return(
-        <View>
-            <Text style={{color:"#ffffff"}}>GroupScreen</Text>
-        </View>
-    )
+    return (
+        <EmptyState
+            title="Conversacion de grupo"
+            description="Aqui aparecera la conversacion cuando el modulo de grupos quede conectado."
+        />
+    );
 }

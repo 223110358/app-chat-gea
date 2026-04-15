@@ -7,7 +7,8 @@ async function send(req, res) {
         chat: chat_id,
         user: user_id,
         message,
-        type: "TEXT"
+        type: "TEXT",
+        read_by: [user_id],
     });
     try {
         await chat_message.save();
@@ -28,13 +29,14 @@ async function sendImage(req,res) {
         chat:chat_id,
         user:user_id,
         message:getFilePath(req.files.image),
-        type:"IMAGE"
+        type:"IMAGE",
+        read_by: [user_id],
     })
     try{
         await chat_message.save();
         const data = await chat_message.populate("user")
         io.sockets.in(chat_id).emit("message",data);
-        io.sockets.in(`${chat_id}._notify`).emit("message_notify",data)
+        io.sockets.in(`${chat_id}_notify`).emit("message_notify",data)
         res.status(200).send({msg:"Mensaje con imagen enviado exitosamente"})
     }catch(error){
         console.error("error al guardar el mensaje:",error);
@@ -46,10 +48,15 @@ async function sendImage(req,res) {
 
 async function getAll(req,res) {
     const {chat_id}=req.params;
+    const { user_id } = req.user;
     try{
         const messages = await ChatMessage.find({chat:chat_id}).sort({
-            createAt: 1,
+            createdAt: 1,
         }).populate("user")
+        await ChatMessage.updateMany(
+            { chat: chat_id, user: { $ne: user_id }, read_by: { $ne: user_id } },
+            { $addToSet: { read_by: user_id } }
+        );
         res.status(200).send({messages})
     }catch(error){
         res.status(500).send({msg:"Error en el servidor"})
@@ -70,7 +77,7 @@ async function getLastMessage(req,res) {
     const {chat_id}=req.params;
     try{
         const response = await ChatMessage.findOne({chat:chat_id}).sort({
-            createat:-1
+            createdAt:-1
         });
         res.status(200).send(response || {});
     }catch (error){

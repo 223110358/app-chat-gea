@@ -1,25 +1,22 @@
 import { StyleSheet } from "react-native";
 
-export const styles = StyleSheet.create({
+export const createStyles = (colors) => StyleSheet.create({
     content: {
-        padding: 10,
+        width: "100%",
+        maxWidth: 760,
+        alignSelf: "center",
+        paddingHorizontal: 12,
+        paddingTop: 14,
+        paddingBottom: 8,
     },
     input: {
-        height: 40,
-        backgroundColor: '#f0f0f0',
-        color:"#000000",
-        borderColor: 'gray',
+        height: 44,
+        backgroundColor: colors.input,
+        color: colors.text,
+        borderColor: colors.border,
         borderWidth: 1,
-        borderRadius: 5,
-        paddingHorizontal: 10,
-        marginBottom: 10,
-    },
-    userItem: {
-        padding: 10,    
-        borderBottomColor: '#ccc',
-        borderBottomWidth: 1,
-    },
-    userName: {
-        fontSize: 16,
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        marginBottom: 8,
     },
 });

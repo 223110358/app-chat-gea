@@ -1,12 +1,15 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { IconBack } from '../../components/Navigation'
+import { useTheme } from '../../hooks'
 import { ChangeFirstnameScreen, ChangeLastnameScreen, SettingsScreen } from '../../screens/Settings'
 import { screens } from '../../Utils'
-import { styles } from '../Styles.styles'
+import { createNavigationStyles } from '../Styles.styles'
 
 const Stack = createNativeStackNavigator();
 
 export function SettingsNavigation() {
+  const { colors } = useTheme();
+  const styles = createNavigationStyles(colors);
   return (
     <Stack.Navigator
     screenOptions={{headerLeft:IconBack,

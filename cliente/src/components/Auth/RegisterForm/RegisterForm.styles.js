@@ -1,21 +1,24 @@
 import { StyleSheet } from "react-native";
-export const styles = StyleSheet.create({
-    viewInput:{
-        marginBottom:15,
+
+export const createStyles = (colors) => StyleSheet.create({
+    viewInput: {
+        marginBottom: 12,
     },
-    input:{
-        backgroundColor:"#000000",
-        color:"#ffffff",
-        fontSize:18,
-        marginVertical:10,
-        padding:10,
+    input: {
+        minHeight: 46,
+        backgroundColor: colors.input,
+        borderColor: colors.border,
+        borderWidth: 1,
+        borderRadius: 8,
+        color: colors.text,
+        fontSize: 16,
+        paddingHorizontal: 12,
     },
-    btnContainer:{
-        marginTop:20,
-        marginBottom:10,
+    btnContainer: {
+        marginTop: 8,
     },
-    inputError:{
-        backgroundColor:"#ff2525",
+    inputError: {
+        borderColor: colors.danger,
+        backgroundColor: colors.dangerSoft,
     },
-        
-})
+});

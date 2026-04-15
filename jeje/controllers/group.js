@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import { Group, GroupMessage, User } from "../models/index.js";
 import { getFilePath } from "../utils/index.js";
-import { request } from "express";
 
 async function create(req,res) {
     const group = new Group(req.body)
@@ -97,25 +96,21 @@ async function updateGroup(req,res) {
 
 async function exitGroup(req,res) {
     const {id} = req.params;
-    const {} = req.user;
+    const { user_id } = req.user;
     try{
        const group = await Group.findById(id);
        if(!group){
         return res.status(400).send({msg:"Grupo no encontrado"})
        }
        group.participants = group.participants.filter(
-        participants => participants.groupString() != user_id.toString()
+        participant => participant.toString() !== user_id.toString()
        );
        await group.save();
-       res.status(200).send({msg:"Salida Exitosa"});
+       return res.status(200).send({msg:"Salida Exitosa"});
     }catch(error){
         console.error("Error al salir del grupo",error)
-        res.status(500).send({msg:"Error al salir del servidor para salir del grupo"})
+        return res.status(500).send({msg:"Error al salir del servidor para salir del grupo"})
     }
-    const newParticipants = group.participants.filter((participants) =>
-     console.log(participants.toString())) 
-   
-    
 }
 
 async function addParticipants(req,res) {
@@ -131,7 +126,7 @@ async function addParticipants(req,res) {
         return res.status(404).json({message:"Grupo no encontrado"})
     };
     const newData={
-        ...group.doc,
+        ...group._doc,
         participants:[...group.participants,...arrayObjectIds]
     };
     await Group.findByIdAndUpdate(id,newData)

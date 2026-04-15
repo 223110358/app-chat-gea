@@ -26,10 +26,10 @@ function createRefreshToken(user){
     return jsonwebtoken.sign(payload,JWT_SECRET)
 }
 function decoded (token){
-    return jsonwebtoken.decode(token,JWT_SECRET,true);
+    return jsonwebtoken.verify(token, JWT_SECRET);
 }
 function hasExpiredToken(token){
-    const {exp} = decoded(token);
+    const { exp } = decoded(token);
     const currentDate= new Date().getTime();
     if(exp <= currentDate){
         return true

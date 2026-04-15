@@ -1,9 +1,10 @@
-import { Text, View } from "react-native";
+import { EmptyState } from "../../components/EmptyState";
 
 export function CreateGroupScreen() {
-    return(
-        <View>
-            <Text>CreateGroupScreen</Text>
-        </View>
-    )
+    return (
+        <EmptyState
+            title="Nuevo grupo"
+            description="Selecciona participantes y define el nombre del grupo cuando esta pantalla se conecte."
+        />
+    );
 }

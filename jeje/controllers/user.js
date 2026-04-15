@@ -67,18 +67,17 @@ async function updateUser(req,res) {
 }
 
 async function getUsersExeptParticipantsGroup(req,res) {
-    const { group_id}=req.params;
-    const group =await Group.findById(group_id)
-    const participantsString=group.participants.toString();","
-    const participants = participantsString.split(",")
-    console.log(participantsString)
-    const response = await User.find({_id:{$nin:participants}}).select("-password",)
-    if (!response) {
-        res.status(400).send({msg:"no se ha encontrado ningun usuario"})
-    }else{
-        res.status(200).send(response)
+    const { group_id } = req.params;
+    try {
+        const group = await Group.findById(group_id);
+        if (!group) {
+            return res.status(404).send({ msg: "Grupo no encontrado" });
+        }
+        const response = await User.find({ _id: { $nin: group.participants } }).select("-password");
+        return res.status(200).send(response);
+    } catch (error) {
+        return res.status(500).send({ msg: "Error en el servidor" });
     }
-    res.status(200).send("Ok participants")
 }
 export const UserController = {
     getMe,

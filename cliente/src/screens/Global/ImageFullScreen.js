@@ -1,9 +1,10 @@
-import { Text, View } from "react-native";
+import { EmptyState } from "../../components/EmptyState";
 
 export function ImageFullScreen() {
-    return(
-        <View>
-            <Text>ImageFullScreen</Text>
-        </View>
-    )
+    return (
+        <EmptyState
+            title="Imagen"
+            description="Vista ampliada de imagen."
+        />
+    );
 }

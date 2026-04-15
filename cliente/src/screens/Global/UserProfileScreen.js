@@ -1,9 +1,10 @@
-import { Text, View } from "react-native";
+import { EmptyState } from "../../components/EmptyState";
 
 export function UserProfileScreen() {
-    return(
-        <View>
-            <Text>UserProfileScreen</Text>
-        </View>
-    )
+    return (
+        <EmptyState
+            title="Perfil de usuario"
+            description="Informacion del contacto seleccionado."
+        />
+    );
 }

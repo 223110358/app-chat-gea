@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     FlatList,
     Image,
@@ -14,9 +14,10 @@ import {
 import { Avatar } from "native-base";
 import * as ImagePicker from "expo-image-picker";
 import { ChatMessage } from "../../api";
-import { useAuth } from "../../hooks";
+import { useAuth, useTheme } from "../../hooks";
 import { ENV } from "../../Utils/constas.js";
-import { styles } from "./ChatScreen.styles.js";
+import { socket } from "../../Utils/sockets.js";
+import { createStyles } from "./ChatScreen.styles.js";
 import { FloatingMenu } from "../../components/Chat/FloatingMenu.js";
 import { ImagePreviewModal } from "../../components/Chat/ImagePreviewModal.js";
 
@@ -27,6 +28,8 @@ export function ChatScreen() {
     const navigation = useNavigation();
     const { chatId, otherUser } = route.params;
     const { accessToken, user } = useAuth();
+    const { colors } = useTheme();
+    const styles = useMemo(() => createStyles(colors), [colors]);
 
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState("");
@@ -38,16 +41,17 @@ export function ChatScreen() {
     const [isSendingImage, setIsSendingImage] = useState(false);
 
     useEffect(() => {
+        if (!otherUser) return;
         navigation.setOptions({
             headerShown: true,
-            headerStyle: { backgroundColor: "#0f0f1a" },
-            headerTintColor: "#fff",
+            headerStyle: { backgroundColor: colors.surface },
+            headerTintColor: colors.text,
             title: "",
             headerTitle: () => (
                 <View style={styles.headerTitle}>
                     <Avatar
                         size="sm"
-                        bg="cyan.500"
+                        bg={colors.primary}
                         source={{
                             uri: otherUser.avatar
                                 ? `${ENV.BASE_PATH}/uploads/${otherUser.avatar}`
@@ -67,13 +71,9 @@ export function ChatScreen() {
                 </View>
             ),
         });
-    }, []);
+    }, [colors, navigation, otherUser, styles]);
 
-    useEffect(() => {
-        loadMessages();
-    }, []);
-
-    const loadMessages = async () => {
+    const loadMessages = useCallback(async () => {
         try {
             const result = await chatMessageController.getAll(accessToken, chatId);
             const arr = Array.isArray(result) ? result : result.messages || [];
@@ -81,7 +81,26 @@ export function ChatScreen() {
         } catch (error) {
             console.error("Error al cargar mensajes:", error);
         }
-    };
+    }, [accessToken, chatId]);
+
+    useEffect(() => {
+        loadMessages();
+        socket?.emit("suscribe", chatId);
+
+        const onMessage = (message) => {
+            setMessages((prev) => {
+                const exists = prev.some((item) => item._id === message._id);
+                return exists ? prev : [message, ...prev];
+            });
+        };
+
+        socket?.on("message", onMessage);
+
+        return () => {
+            socket?.emit("unsuscribe", chatId);
+            socket?.off("message", onMessage);
+        };
+    }, [chatId, loadMessages]);
 
     const sendMessage = async () => {
         if (!inputText.trim()) return;
@@ -200,7 +219,7 @@ export function ChatScreen() {
                         {showAvatar ? (
                             <Avatar
                                 size="xs"
-                                bg="cyan.500"
+                                bg={colors.primary}
                                 source={{
                                     uri: otherUser.avatar
                                         ? `${ENV.BASE_PATH}/uploads/${otherUser.avatar}`
@@ -257,17 +276,13 @@ export function ChatScreen() {
         );
     };
 
-    const renderDateSeparator = (date) => (
-        <View style={styles.dateSeparator}>
-            <Text style={styles.dateSeparatorText}>
-                {new Date(date).toLocaleDateString([], {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                })}
-            </Text>
-        </View>
-    );
+    if (!otherUser) {
+        return (
+            <View style={styles.container}>
+                <Text style={styles.messageText}>No se pudo cargar la informacion del chat.</Text>
+            </View>
+        );
+    }
 
     return (
         <KeyboardAvoidingView
@@ -305,7 +320,7 @@ export function ChatScreen() {
                     value={inputText}
                     onChangeText={setInputText}
                     placeholder="Escribe un mensaje..."
-                    placeholderTextColor="#555"
+                    placeholderTextColor={colors.muted}
                     multiline
                 />
 

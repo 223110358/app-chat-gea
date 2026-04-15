@@ -1,24 +1,19 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-    View,
-    TouchableOpacity,
     Animated,
     StyleSheet,
     Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTheme } from "../../hooks";
 
 const FloatingMenu = ({ onCameraPress, onGalleryPress }) => {
+    const { colors } = useTheme();
+    const styles = createStyles(colors);
     const [isOpen, setIsOpen] = useState(false);
     const [scaleAnim] = useState(new Animated.Value(0));
-
-    const toggleMenu = () => {
-        if (isOpen) {
-            closeMenu();
-        } else {
-            openMenu();
-        }
-    };
 
     const openMenu = () => {
         setIsOpen(true);
@@ -39,6 +34,11 @@ const FloatingMenu = ({ onCameraPress, onGalleryPress }) => {
         }).start(() => setIsOpen(false));
     };
 
+    const toggleMenu = () => {
+        if (isOpen) closeMenu();
+        else openMenu();
+    };
+
     const handleCameraPress = () => {
         closeMenu();
         onCameraPress();
@@ -51,7 +51,6 @@ const FloatingMenu = ({ onCameraPress, onGalleryPress }) => {
 
     return (
         <View style={styles.container}>
-            {/* Overlay */}
             {isOpen && (
                 <TouchableOpacity
                     style={styles.overlay}
@@ -60,7 +59,6 @@ const FloatingMenu = ({ onCameraPress, onGalleryPress }) => {
                 />
             )}
 
-            {/* Menú flotante */}
             <Animated.View
                 style={[
                     styles.menu,
@@ -70,42 +68,39 @@ const FloatingMenu = ({ onCameraPress, onGalleryPress }) => {
                     },
                 ]}
             >
-                {/* Opción Cámara */}
                 <TouchableOpacity
                     style={styles.menuItem}
                     onPress={handleCameraPress}
                 >
                     <View style={styles.menuItemIcon}>
-                        <MaterialCommunityIcons name="camera" size={20} color="#fff" />
+                        <MaterialCommunityIcons name="camera" size={20} color={colors.primaryText} />
                     </View>
-                    <Text style={styles.menuItemText}>Cámara</Text>
+                    <Text style={styles.menuItemText}>Camara</Text>
                 </TouchableOpacity>
 
-                {/* Opción Galería */}
                 <TouchableOpacity
                     style={styles.menuItem}
                     onPress={handleGalleryPress}
                 >
                     <View style={styles.menuItemIcon}>
-                        <MaterialCommunityIcons name="image" size={20} color="#fff" />
+                        <MaterialCommunityIcons name="image" size={20} color={colors.primaryText} />
                     </View>
-                    <Text style={styles.menuItemText}>Galería</Text>
+                    <Text style={styles.menuItemText}>Galeria</Text>
                 </TouchableOpacity>
             </Animated.View>
 
-            {/* Botón flotante */}
             <TouchableOpacity
                 style={styles.fab}
                 onPress={toggleMenu}
                 activeOpacity={0.7}
             >
-                <Text style={styles.fabIcon}>📎</Text>
+                <MaterialCommunityIcons name="paperclip" size={22} color={colors.text} />
             </TouchableOpacity>
         </View>
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors) => StyleSheet.create({
     container: {
         position: "relative",
     },
@@ -118,33 +113,26 @@ const styles = StyleSheet.create({
         zIndex: 100,
     },
     fab: {
-        width: 40,
-        height: 40,
+        width: 42,
+        height: 42,
         justifyContent: "center",
         alignItems: "center",
-        borderRadius: 20,
-        backgroundColor: "transparent",
-    },
-    fabIcon: {
-        fontSize: 20,
-        color: "#fff",
+        borderRadius: 8,
+        backgroundColor: colors.surfaceAlt,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
     menu: {
         position: "absolute",
         bottom: 50,
         left: 0,
-        backgroundColor: "#2a2d38",
-        borderRadius: 16,
+        backgroundColor: colors.surface,
+        borderRadius: 8,
         paddingVertical: 8,
-        borderColor: "#3a3d48",
+        borderColor: colors.border,
         borderWidth: 1,
         minWidth: 140,
         zIndex: 101,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 8,
     },
     menuItem: {
         flexDirection: "row",
@@ -152,24 +140,21 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 12,
         marginHorizontal: 4,
-        borderRadius: 12,
+        borderRadius: 8,
     },
     menuItemIcon: {
         width: 36,
         height: 36,
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#1e2029",
-        borderRadius: 10,
+        backgroundColor: colors.primary,
+        borderRadius: 8,
         marginRight: 12,
     },
-    menuIcon: {
-        fontSize: 18,
-    },
     menuItemText: {
-        color: "#ffffff",
+        color: colors.text,
         fontSize: 14,
-        fontWeight: "500",
+        fontWeight: "600",
     },
 });
 
