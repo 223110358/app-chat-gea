@@ -154,6 +154,7 @@ export function ChatScreen() {
 
     const handleCameraPress = async () => {
         try {
+            // Solicitar permisos de cámara
             const { status } = await ImagePicker.requestCameraPermissionsAsync();
             if (status !== "granted") {
                 Alert.alert("Permiso denegado", "Necesitamos acceso a tu cámara para enviar fotos");
@@ -162,20 +163,45 @@ export function ChatScreen() {
 
             const options = {
                 mediaTypes: ImagePicker.MediaTypeOptions.Images,
-                allowsEditing: true,
+                allowsEditing: Platform.OS !== "web", // El editor de expo no funciona bien en web
                 aspect: [4, 3],
                 quality: 0.7,
+                cameraType: ImagePicker.CameraType.back,
             };
 
-            const result = await ImagePicker.launchCameraAsync(options);
+            let result;
+            
+            if (Platform.OS === "web") {
+                // En web, a veces launchCameraAsync no está soportado o abre galería
+                // Intentamos launchCameraAsync, pero con un manejo de error más amigable
+                try {
+                    // Algunas versiones de expo-image-picker en web requieren este permiso explícito
+                    // para abrir el diálogo de captura
+                    result = await ImagePicker.launchCameraAsync(options);
+                } catch (webError) {
+                    console.error("Web Camera Error:", webError);
+                    // Si falla, es probable que el navegador bloquee el acceso directo
+                    // Mostramos un mensaje al usuario para que use la galería o revise permisos
+                    Alert.alert(
+                        "Cámara no disponible",
+                        "El navegador no permitió abrir la cámara directamente. Por favor, selecciona una foto de tu equipo."
+                    );
+                    result = await ImagePicker.launchImageLibraryAsync(options);
+                }
+            } else {
+                result = await ImagePicker.launchCameraAsync(options);
+            }
 
             if (!result.canceled && result.assets && result.assets.length > 0) {
                 setSelectedImageUri(result.assets[0].uri);
                 setPreviewModalVisible(true);
             }
         } catch (error) {
-            console.error("Error al abrir la cámara:", error);
-            Alert.alert("Error", "No se pudo abrir la cámara en este dispositivo");
+            console.error("Error al acceder a medios:", error);
+            Alert.alert(
+                "Error",
+                "No se pudo acceder a la cámara o galería en este dispositivo."
+            );
         }
     };
 
