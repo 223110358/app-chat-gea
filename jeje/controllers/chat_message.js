@@ -7,8 +7,7 @@ async function send(req, res) {
         chat: chat_id,
         user: user_id,
         message,
-        type: "TEXT",
-        read_by: [user_id],
+        type: "TEXT"
     });
     try {
         await chat_message.save();
@@ -25,40 +24,61 @@ async function send(req, res) {
 async function sendImage(req,res) {
     const {chat_id}= req.body;
     const {user_id}=req.user;
+    
+    // Validar que la imagen existe
+    if (!req.files || !req.files.image) {
+        return res.status(400).send({msg: "No se encontró archivo de imagen"});
+    }
+    
+    // multiparty devuelve un array, tomar el primer elemento
+    const imageFile = Array.isArray(req.files.image) ? req.files.image[0] : req.files.image;
+    
+    if (!imageFile || !imageFile.path) {
+        return res.status(400).send({msg: "Archivo de imagen inválido"});
+    }
+    
     const chat_message= new ChatMessage({
         chat:chat_id,
         user:user_id,
-        message:getFilePath(req.files.image),
-        type:"IMAGE",
-        read_by: [user_id],
+        message:getFilePath(imageFile),
+        type:"IMAGE"
     })
     try{
         await chat_message.save();
         const data = await chat_message.populate("user")
         io.sockets.in(chat_id).emit("message",data);
         io.sockets.in(`${chat_id}_notify`).emit("message_notify",data)
-        res.status(200).send({msg:"Mensaje con imagen enviado exitosamente"})
+        res.status(200).send({msg:"Mensaje con imagen enviado exitosamente",data})
     }catch(error){
         console.error("error al guardar el mensaje:",error);
         res.status(400).send({msg:"Error al enviar el mensaje con imagen",details:error.message})
     }
-
-
 }
 
 async function getAll(req,res) {
-    const {chat_id}=req.params;
-    const { user_id } = req.user;
-    try{
-        const messages = await ChatMessage.find({chat:chat_id}).sort({
-            createdAt: 1,
-        }).populate("user")
-        await ChatMessage.updateMany(
-            { chat: chat_id, user: { $ne: user_id }, read_by: { $ne: user_id } },
-            { $addToSet: { read_by: user_id } }
-        );
-        res.status(200).send({messages})
-    }catch(error){
+    const { chat_id } = req.params;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(10, Math.min(100, parseInt(req.query.limit, 10) || 30));
+
+    try {
+        const skip = (page - 1) * limit;
+        const total = await ChatMessage.countDocuments({ chat: chat_id });
+
+        const messages = await ChatMessage.find({ chat: chat_id })
+            .sort({ createdAt: 1 })
+            .skip(skip)
+            .limit(limit)
+            .populate("user");
+
+        res.status(200).send({
+            messages,
+            page,
+            limit,
+            total,
+            hasMore: skip + messages.length < total,
+        });
+    } catch(error){
+        console.error("Error al obtener mensajes:", error);
         res.status(500).send({msg:"Error en el servidor"})
     }
 }
@@ -77,7 +97,7 @@ async function getLastMessage(req,res) {
     const {chat_id}=req.params;
     try{
         const response = await ChatMessage.findOne({chat:chat_id}).sort({
-            createdAt:-1
+            createat:-1
         });
         res.status(200).send(response || {});
     }catch (error){

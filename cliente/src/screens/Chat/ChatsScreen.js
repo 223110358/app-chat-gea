@@ -1,4 +1,4 @@
-import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
+﻿import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { AddIcon, IconButton } from "native-base";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -135,10 +135,21 @@ export function ChatsScreen() {
     const visibleChats = useMemo(() => {
         const normalizedSearch = searchText.trim().toLowerCase();
         const filteredChats = chats.filter((chat) => {
+            // Validar que el chat y sus participantes existan
+            if (!chat || !chat.participant_one || !chat.participant_two) {
+                return false;
+            }
+
             const otherUser =
                 chat.participant_one._id === user?._id
                     ? chat.participant_two
                     : chat.participant_one;
+
+            // Validar que otherUser exista
+            if (!otherUser) {
+                return false;
+            }
+
             const displayName = `${otherUser.firstname || ""} ${otherUser.lastname || ""}`.trim();
             const haystack = [
                 displayName,
@@ -162,13 +173,18 @@ export function ChatsScreen() {
         });
     }, [chats, filter, searchText, sortOrder, user?._id]);
 
-    const renderChatItem = useCallback(({ item }) => (
-        <ChatItem
-            chat={item}
-            currentUserId={user._id}
-            onDelete={handleDeleteChat}
-        />
-    ), [handleDeleteChat, user?._id]);
+    const renderChatItem = useCallback(({ item }) => {
+        if (!user || !user._id) {
+            return null;
+        }
+        return (
+            <ChatItem
+                chat={item}
+                currentUserId={user._id}
+                onDelete={handleDeleteChat}
+            />
+        );
+    }, [handleDeleteChat, user?._id]);
 
     if (loading) {
         return (
@@ -287,27 +303,26 @@ const createStyles = (colors) => StyleSheet.create({
         marginTop: 2,
     },
     searchInput: {
-        height: 44,
-        borderRadius: 8,
-        backgroundColor: colors.input,
         borderWidth: 1,
         borderColor: colors.border,
-        color: colors.text,
+        borderRadius: 8,
         paddingHorizontal: 12,
+        paddingVertical: 8,
         marginBottom: 10,
+        color: colors.text,
+        backgroundColor: colors.surface,
     },
     filterRow: {
         flexDirection: "row",
-        flexWrap: "wrap",
+        justifyContent: "flex-start",
         gap: 8,
     },
     filterButton: {
-        minHeight: 34,
-        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 6,
         borderWidth: 1,
         borderColor: colors.border,
-        paddingHorizontal: 10,
-        justifyContent: "center",
     },
     filterButtonActive: {
         backgroundColor: colors.primary,
@@ -315,7 +330,7 @@ const createStyles = (colors) => StyleSheet.create({
     },
     filterText: {
         color: colors.muted,
-        fontSize: 13,
+        fontSize: 12,
         fontWeight: "600",
     },
     filterTextActive: {
@@ -325,26 +340,25 @@ const createStyles = (colors) => StyleSheet.create({
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        width: "100%",
-        backgroundColor: colors.background,
+        paddingHorizontal: 20,
+    },
+    emptyText: {
+        color: colors.text,
+        fontSize: 18,
+        fontWeight: "700",
+        marginBottom: 4,
+    },
+    emptySubText: {
+        color: colors.muted,
+        fontSize: 14,
+        marginTop: 4,
+        textAlign: "center",
     },
     list: {
         width: "100%",
         maxWidth: 760,
     },
     listContent: {
-        paddingBottom: 24,
-    },
-    emptyText: {
-        color: colors.text,
-        fontSize: 18,
-        fontWeight: "600",
-    },
-    emptySubText: {
-        color: colors.muted,
-        fontSize: 14,
-        marginTop: 8,
-        textAlign: "center",
-        paddingHorizontal: 32,
+        paddingVertical: 4,
     },
 });

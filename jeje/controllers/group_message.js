@@ -13,9 +13,6 @@ async function sendText(req,res) {
     });
     try {
         await group_message.save()
-        const data = await group_message.populate("user");
-        io.sockets.in(group_id).emit("message",data);
-        io.sockets.in(`${group_id}_notify`).emit("message_notify",data)
         res.status(201).send({})
     } catch (error) {
         console.error("Error al guardar el mensaje",error)
@@ -24,7 +21,7 @@ async function sendText(req,res) {
 }
 
 async function sendImage(req,res) {
-    const { group_id}=req.body;
+    const { group_id,message}=req.body;
     const {user_id}=req.user;
     const group_message = new GroupMessage({
         group:group_id,

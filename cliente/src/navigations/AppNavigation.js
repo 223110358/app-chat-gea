@@ -1,5 +1,4 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { ChatScreen } from "../screens/Chat";
 import {
   CameraScreen,
   ImageFullScreen,
@@ -11,33 +10,19 @@ import {
   GroupProfileScreen,
   GroupScreen
 } from "../screens/Groups";
-import { useTheme } from "../hooks";
 import { screens } from "../Utils";
 import { BottomTabNavigation } from "./BottomTabNavigation";
-import { createNavigationStyles } from "./Styles.styles";
+import { styles } from "./Styles.styles";
 
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigation() {
-  const { colors } = useTheme();
-  const styles = createNavigationStyles(colors);
   return (
     <Stack.Navigator>
       <Stack.Screen
         name={screens.tab.root}
         component={BottomTabNavigation}
         options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name={screens.global.chatScreen}
-        component={ChatScreen}
-        options={{
-          headerShown: false,
-          contentStyle: styles.stackContent,
-          headerStyle: styles.stackHeader,
-          headerTitleStyle: styles.stackHeaderTitle
-        }}
-
       />
       <Stack.Screen
         name={screens.global.groupScreen}
