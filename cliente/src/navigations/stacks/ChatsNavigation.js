@@ -1,15 +1,12 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { IconBack } from "../../components/Navigation";
-import { useTheme } from "../../hooks";
-import { ChatsScreen, CreateChatScreen } from "../../screens/Chat";
+import { ChatsScreen, CreateChatScreen, ChatScreen } from "../../screens/Chat";
 import { screens } from "../../Utils";
-import { createNavigationStyles } from "../Styles.styles";
+import { styles } from "../Styles.styles";
 
 const Stack = createNativeStackNavigator();
 
 export function ChatsNavigation() { 
-    const { colors } = useTheme();
-    const styles = createNavigationStyles(colors);
     return(
         <Stack.Navigator
         screenOptions={{headerLeft:IconBack,
@@ -35,6 +32,11 @@ export function ChatsNavigation() {
                 }
             
             }
+            />
+            <Stack.Screen 
+            name ={screens.global.chatScreen}
+            component={ChatScreen}
+            options={{headerShown: false}}
             />
         </Stack.Navigator>
     )

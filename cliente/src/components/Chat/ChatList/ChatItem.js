@@ -138,7 +138,93 @@ function ChatItemComponent({ chat, currentUserId, onDelete }) {
   );
 }
 
-export const ChatItem = memo(ChatItemComponent);
+// ============ Estilos Dinámicos ============
+const createStyles = (colors) =>
+    StyleSheet.create({
+        container: {
+            flexDirection: "row",
+            alignItems: "center",
+            minHeight: 78,
+            paddingHorizontal: 14,
+            paddingVertical: 12,
+            marginHorizontal: 12,
+            marginVertical: 5,
+            borderRadius: 8,
+            backgroundColor: colors.surface,
+            borderWidth: 1,
+            borderColor: colors.border,
+        },
+        avatarWrapper: {
+            marginRight: 14,
+        },
+        avatar: {
+            width: 50,
+            height: 50,
+            borderRadius: 25,
+        },
+        avatarPlaceholder: {
+            width: 50,
+            height: 50,
+            borderRadius: 25,
+            backgroundColor: colors.primaryStrong,
+            justifyContent: "center",
+            alignItems: "center",
+        },
+        avatarLetter: {
+            color: colors.primaryText,
+            fontSize: 20,
+            fontWeight: "bold",
+        },
+        info: {
+            flex: 1,
+        },
+        name: {
+            color: colors.text,
+            fontSize: 16,
+            fontWeight: "700",
+        },
+        email: {
+            color: colors.muted,
+            fontSize: 13,
+            marginTop: 2,
+        },
+        meta: {
+            alignItems: "flex-end",
+            marginLeft: 8,
+        },
+        time: {
+            color: colors.muted,
+            fontSize: 11,
+            minHeight: 14,
+        },
+        unreadBadge: {
+            minWidth: 22,
+            height: 22,
+            borderRadius: 11,
+            backgroundColor: colors.primary,
+            alignItems: "center",
+            justifyContent: "center",
+            marginTop: 4,
+        },
+        unreadText: {
+            color: colors.primaryText,
+            fontSize: 12,
+            fontWeight: "700",
+        },
+        deleteButton: {
+            marginTop: 6,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            borderRadius: 6,
+            borderWidth: 1,
+            borderColor: colors.danger,
+        },
+        deleteText: {
+            color: colors.danger,
+            fontSize: 14,
+            fontWeight: "700",
+        },
+    });
 
 const createStyles = (colors) =>
   StyleSheet.create({

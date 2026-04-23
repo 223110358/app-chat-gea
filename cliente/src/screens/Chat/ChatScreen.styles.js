@@ -1,30 +1,34 @@
 import { StyleSheet } from "react-native";
 
-export const createStyles = (colors) => StyleSheet.create({
+export const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: colors.background,
+        backgroundColor: "#111318",
+        position: "relative",
     },
+
+    // Header
     headerTitle: {
         flexDirection: "row",
         alignItems: "center",
     },
     headerName: {
-        color: colors.text,
+        color: "#ffffff",
         fontSize: 16,
-        fontWeight: "700",
+        fontWeight: "600",
     },
     headerStatus: {
-        color: colors.primary,
+        color: "#4ade80",
         fontSize: 11,
     },
+
+    // Lista de mensajes
     messagesList: {
-        width: "100%",
-        maxWidth: 860,
-        alignSelf: "center",
         paddingHorizontal: 12,
         paddingVertical: 16,
     },
+
+    // Filas
     messageRow: {
         flexDirection: "row",
         alignItems: "flex-end",
@@ -36,10 +40,14 @@ export const createStyles = (colors) => StyleSheet.create({
     otherRow: {
         justifyContent: "flex-start",
     },
+
+    // Avatar
     avatarContainer: {
         marginRight: 6,
         marginBottom: 2,
     },
+
+    // Burbujas
     bubble: {
         maxWidth: "72%",
         borderRadius: 18,
@@ -48,67 +56,110 @@ export const createStyles = (colors) => StyleSheet.create({
         marginVertical: 1,
     },
     myBubble: {
-        backgroundColor: colors.bubbleMine,
+        backgroundColor: "#2f6feb",
         borderBottomRightRadius: 4,
     },
     otherBubble: {
-        backgroundColor: colors.bubbleOther,
+        backgroundColor: "#1e2029",
         borderBottomLeftRadius: 4,
         borderWidth: 1,
-        borderColor: colors.border,
+        borderColor: "#2a2d38",
     },
     imageBubble: {
         padding: 4,
         backgroundColor: "transparent",
     },
+
+    // Texto mensajes
     messageText: {
         fontSize: 15,
         lineHeight: 21,
-        color: colors.text,
     },
     myText: {
-        color: colors.primaryText,
+        color: "#ffffff",
     },
     otherText: {
-        color: colors.text,
+        color: "#d1d5db",
     },
+
+    // Hora
     timeText: {
         fontSize: 10,
         marginTop: 4,
         alignSelf: "flex-end",
     },
     myTime: {
-        color: "rgba(255,255,255,0.7)",
+        color: "rgba(255,255,255,0.45)",
     },
     otherTime: {
-        color: colors.muted,
+        color: "rgba(255,255,255,0.25)",
     },
+
+    // Imagen en mensaje
     messageImage: {
         width: 220,
         height: 180,
         borderRadius: 14,
     },
+
+    // Separador de fecha
+    dateSeparator: {
+        alignItems: "center",
+        marginVertical: 12,
+    },
+    dateSeparatorText: {
+        color: "#4b5263",
+        fontSize: 11,
+        backgroundColor: "#1a1c23",
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 10,
+    },
+
+    scrollToBottomButton: {
+        position: "absolute",
+        right: 16,
+        bottom: 86,
+        width: 48,
+        height: 48,
+        borderRadius: 24,
+        backgroundColor: "#2f6feb",
+        justifyContent: "center",
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 6,
+        elevation: 4,
+    },
+
+    // Input
     inputContainer: {
-        width: "100%",
-        maxWidth: 860,
-        alignSelf: "center",
         flexDirection: "row",
         alignItems: "flex-end",
         paddingHorizontal: 10,
         paddingVertical: 10,
-        backgroundColor: colors.background,
+        backgroundColor: "#111318",
         borderTopWidth: 1,
-        borderTopColor: colors.border,
+        borderTopColor: "#1e2029",
+    },
+    iconButton: {
+        width: 40,
+        height: 40,
+        justifyContent: "center",
+        alignItems: "center",
+        marginRight: 6,
+    },
+    iconText: {
+        fontSize: 20,
     },
     input: {
         flex: 1,
-        backgroundColor: colors.input,
-        borderColor: colors.border,
-        borderWidth: 1,
-        borderRadius: 8,
+        backgroundColor: "#1e2029",
+        borderRadius: 22,
         paddingHorizontal: 16,
         paddingVertical: 10,
-        color: colors.text,
+        color: "#ffffff",
         fontSize: 15,
         maxHeight: 120,
         marginLeft: 6,
@@ -116,17 +167,17 @@ export const createStyles = (colors) => StyleSheet.create({
     sendButton: {
         width: 42,
         height: 42,
-        borderRadius: 8,
-        backgroundColor: colors.primary,
+        borderRadius: 21,
+        backgroundColor: "#2f6feb",
         justifyContent: "center",
         alignItems: "center",
         marginLeft: 8,
     },
     sendButtonDisabled: {
-        backgroundColor: colors.surfaceAlt,
+        backgroundColor: "#1e2029",
     },
     sendIcon: {
-        color: colors.primaryText,
+        color: "#ffffff",
         fontSize: 16,
     },
 });

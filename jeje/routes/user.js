@@ -1,9 +1,15 @@
 import express from "express";
 import multiparty from "connect-multiparty";
+import fs from "fs";
+import path from "path";
 import { UserController } from "../controllers/index.js";
 import { mdAuth } from "../middleware/index.js";
 
-const mdUpload = multiparty({uploadDir:"./uploads/avatar"})
+const uploadDir = path.resolve("./uploads/avatar");
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+const mdUpload = multiparty({uploadDir})
 const api = express.Router()
 
 // aqui van mis endpoints

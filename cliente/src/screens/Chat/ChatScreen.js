@@ -1,5 +1,5 @@
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
     FlatList,
     Image,
@@ -12,12 +12,13 @@ import {
     Alert,
 } from "react-native";
 import { Avatar } from "native-base";
+import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { ChatMessage } from "../../api";
-import { useAuth, useTheme } from "../../hooks";
+import { useAuth } from "../../hooks";
+import { socket } from "../../Utils/sockets";
 import { ENV } from "../../Utils/constas.js";
-import { socket } from "../../Utils/sockets.js";
-import { createStyles } from "./ChatScreen.styles.js";
+import { styles } from "./ChatScreen.styles.js";
 import { FloatingMenu } from "../../components/Chat/FloatingMenu.js";
 import { ImagePreviewModal } from "../../components/Chat/ImagePreviewModal.js";
 
@@ -28,11 +29,11 @@ export function ChatScreen() {
     const navigation = useNavigation();
     const { chatId, otherUser } = route.params;
     const { accessToken, user } = useAuth();
-    const { colors } = useTheme();
-    const styles = useMemo(() => createStyles(colors), [colors]);
 
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState("");
+    const [isAtBottom, setIsAtBottom] = useState(true);
+    const [hasNewMessages, setHasNewMessages] = useState(false);
     const flatListRef = useRef(null);
 
     // Estado para el modal de preview de imagen
@@ -41,17 +42,16 @@ export function ChatScreen() {
     const [isSendingImage, setIsSendingImage] = useState(false);
 
     useEffect(() => {
-        if (!otherUser) return;
         navigation.setOptions({
             headerShown: true,
-            headerStyle: { backgroundColor: colors.surface },
-            headerTintColor: colors.text,
+            headerStyle: { backgroundColor: "#0f0f1a" },
+            headerTintColor: "#fff",
             title: "",
             headerTitle: () => (
                 <View style={styles.headerTitle}>
                     <Avatar
                         size="sm"
-                        bg={colors.primary}
+                        bg="cyan.500"
                         source={{
                             uri: otherUser.avatar
                                 ? `${ENV.BASE_PATH}/uploads/${otherUser.avatar}`
@@ -71,106 +71,147 @@ export function ChatScreen() {
                 </View>
             ),
         });
-    }, [colors, navigation, otherUser, styles]);
+    }, []);
 
-    const loadMessages = useCallback(async () => {
+    useEffect(() => {
+        loadMessages();
+    }, []);
+
+    useEffect(() => {
+        if (!socket || !chatId) return;
+
+        socket.emit("suscribe", chatId);
+
+        const onMessage = (newMessage) => {
+            setMessages((prev) => {
+                if (prev.some((msg) => msg._id === newMessage._id)) {
+                    return prev;
+                }
+                return [newMessage, ...prev];
+            });
+            setTimeout(() => scrollToBottom(), 100);
+        };
+
+        socket.on("message", onMessage);
+
+        return () => {
+            socket.off("message", onMessage);
+            socket.emit("unsuscribe", chatId);
+        };
+    }, [chatId]);
+
+    const loadMessages = async () => {
         try {
             const result = await chatMessageController.getAll(accessToken, chatId);
             const arr = Array.isArray(result) ? result : result.messages || [];
             setMessages(arr.reverse());
+            setHasNewMessages(false);
+            setIsAtBottom(true);
         } catch (error) {
             console.error("Error al cargar mensajes:", error);
         }
-    }, [accessToken, chatId]);
+    };
+
+    const scrollToBottom = () => {
+        flatListRef.current?.scrollToOffset({
+            offset: 0,
+            animated: true,
+        });
+        setHasNewMessages(false);
+        setIsAtBottom(true);
+    };
+
+    const handleScroll = (event) => {
+        const { contentOffset } = event.nativeEvent;
+        const isBottom = contentOffset.y <= 20;
+        setIsAtBottom(isBottom);
+        if (isBottom) {
+            setHasNewMessages(false);
+        } else {
+            setHasNewMessages(true);
+        }
+    };
 
     useEffect(() => {
-        loadMessages();
-        socket?.emit("suscribe", chatId);
-
-        const onMessage = (message) => {
-            setMessages((prev) => {
-                const exists = prev.some((item) => item._id === message._id);
-                return exists ? prev : [message, ...prev];
-            });
-        };
-
-        socket?.on("message", onMessage);
-
-        return () => {
-            socket?.emit("unsuscribe", chatId);
-            socket?.off("message", onMessage);
-        };
-    }, [chatId, loadMessages]);
+        if (messages.length > 0) {
+            scrollToBottom();
+        }
+    }, [messages.length]);
 
     const sendMessage = async () => {
         if (!inputText.trim()) return;
         const text = inputText.trim();
         setInputText("");
 
-        const tempMessage = {
-            _id: Date.now().toString(),
-            message: text,
-            type: "TEXT",
-            user: { _id: user._id },
-            createdAt: new Date(),
-        };
-        setMessages((prev) => [tempMessage, ...prev]);
-
         try {
             await chatMessageController.send(accessToken, chatId, text);
-            loadMessages();
+            await loadMessages();
+            scrollToBottom();
         } catch (error) {
             console.error("Error al enviar mensaje:", error);
         }
     };
 
     const handleCameraPress = async () => {
-        const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 0.7,
-        });
+        try {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== "granted") {
+                Alert.alert("Permiso denegado", "Necesitamos acceso a tu cámara para enviar fotos");
+                return;
+            }
 
-        if (!result.canceled && result.assets && result.assets.length > 0) {
-            setSelectedImageUri(result.assets[0].uri);
-            setPreviewModalVisible(true);
+            const options = {
+                mediaTypes: ImagePicker.MediaTypeOptions.Images,
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.7,
+            };
+
+            const result = await ImagePicker.launchCameraAsync(options);
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                setSelectedImageUri(result.assets[0].uri);
+                setPreviewModalVisible(true);
+            }
+        } catch (error) {
+            console.error("Error al abrir la cámara:", error);
+            Alert.alert("Error", "No se pudo abrir la cámara en este dispositivo");
         }
     };
 
     const handleGalleryPress = async () => {
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 3],
-            quality: 0.7,
-        });
+        try {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== "granted") {
+                Alert.alert("Permiso denegado", "Necesitamos acceso a tu galería para enviar fotos");
+                return;
+            }
 
-        if (!result.canceled && result.assets && result.assets.length > 0) {
-            setSelectedImageUri(result.assets[0].uri);
-            setPreviewModalVisible(true);
+            const options = {
+                mediaTypes: "images",
+                allowsEditing: true,
+                aspect: [4, 3],
+                quality: 0.7,
+            };
+
+            const result = await ImagePicker.launchImageLibraryAsync(options);
+
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+                setSelectedImageUri(result.assets[0].uri);
+                setPreviewModalVisible(true);
+            }
+        } catch (error) {
+            console.error("Error al abrir la galería:", error);
+            Alert.alert("Error", "No se pudo abrir la galería en este dispositivo");
         }
     };
 
     const sendImage = async (imageUri) => {
         try {
-            // Mostrar la imagen localmente para responsive UX
-            const tempMessage = {
-                _id: Date.now().toString(),
-                message: imageUri,
-                type: "IMAGE",
-                user: { _id: user._id },
-                createdAt: new Date(),
-            };
-            setMessages((prev) => [tempMessage, ...prev]);
-
-            // Enviar imagen al backend
             await chatMessageController.sendImage(accessToken, chatId, imageUri);
-
-            // Recargar mensajes reales desde servidor
             await loadMessages();
-
             Alert.alert("Imagen enviada", "La imagen se ha enviado correctamente");
+            scrollToBottom();
         } catch (error) {
             console.error("Error al enviar imagen:", error);
             Alert.alert("Error", "No se pudo enviar la imagen");
@@ -219,7 +260,7 @@ export function ChatScreen() {
                         {showAvatar ? (
                             <Avatar
                                 size="xs"
-                                bg={colors.primary}
+                                bg="cyan.500"
                                 source={{
                                     uri: otherUser.avatar
                                         ? `${ENV.BASE_PATH}/uploads/${otherUser.avatar}`
@@ -245,7 +286,22 @@ export function ChatScreen() {
                     {isImage ? (
                         <Image
                             source={{
-                                uri: `${ENV.BASE_PATH}/uploads/${item.message}`,
+                                uri: (() => {
+                                    const msg = item.message;
+                                    if (!msg) return null;
+                                    const normalized = msg.replace(/\\/g, "/");
+
+                                    if (normalized.startsWith("http") || normalized.startsWith("file:") || normalized.startsWith("blob:")) {
+                                        return normalized;
+                                    }
+                                    if (normalized.startsWith("/uploads/")) {
+                                        return `${ENV.BASE_PATH}${normalized}`;
+                                    }
+                                    if (normalized.startsWith("uploads/")) {
+                                        return `${ENV.BASE_PATH}/${normalized}`;
+                                    }
+                                    return `${ENV.BASE_PATH}/uploads/${normalized}`;
+                                })(),
                             }}
                             style={styles.messageImage}
                             resizeMode="cover"
@@ -276,13 +332,17 @@ export function ChatScreen() {
         );
     };
 
-    if (!otherUser) {
-        return (
-            <View style={styles.container}>
-                <Text style={styles.messageText}>No se pudo cargar la informacion del chat.</Text>
-            </View>
-        );
-    }
+    const renderDateSeparator = (date) => (
+        <View style={styles.dateSeparator}>
+            <Text style={styles.dateSeparatorText}>
+                {new Date(date).toLocaleDateString([], {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                })}
+            </Text>
+        </View>
+    );
 
     return (
         <KeyboardAvoidingView
@@ -299,13 +359,26 @@ export function ChatScreen() {
                 inverted
                 contentContainerStyle={styles.messagesList}
                 showsVerticalScrollIndicator={false}
-                onContentSizeChange={() =>
-                    flatListRef.current?.scrollToOffset({
-                        offset: 0,
-                        animated: true,
-                    })
-                }
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+                onContentSizeChange={() => {
+                    if (isAtBottom) {
+                        flatListRef.current?.scrollToOffset({
+                            offset: 0,
+                            animated: true,
+                        });
+                    }
+                }}
             />
+
+            {hasNewMessages && (
+                <TouchableOpacity
+                    style={styles.scrollToBottomButton}
+                    onPress={scrollToBottom}
+                >
+                    <Ionicons name="chevron-down" size={24} color="#ffffff" />
+                </TouchableOpacity>
+            )}
 
             {/* Input de mensaje */}
             <View style={styles.inputContainer}>
@@ -320,8 +393,11 @@ export function ChatScreen() {
                     value={inputText}
                     onChangeText={setInputText}
                     placeholder="Escribe un mensaje..."
-                    placeholderTextColor={colors.muted}
-                    multiline
+                    placeholderTextColor="#555"
+                    multiline={false}
+                    blurOnSubmit={true}
+                    returnKeyType="send"
+                    onSubmitEditing={sendMessage}
                 />
 
                 {/* Botón enviar */}

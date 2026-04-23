@@ -5,7 +5,7 @@ import { HandlerNavigation } from "./src/navigations";
 
 export default function App() {
     return (
-        <NativeBaseProvider>
+        <NativeBaseProvider isSSR={false}>
             <ThemeProvider>
                 <NavigationContainer>
                     <AuthProvider>

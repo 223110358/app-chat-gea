@@ -22,10 +22,7 @@ async function create(req, res) {
         });
 
         if (foundOne) {
-            return res.status(200).send({
-                ...foundOne.toObject(),
-                already_exists: true,
-            });
+            return res.status(200).send(foundOne);
         }
 
         // Buscar si existe en orden inverso
@@ -35,10 +32,7 @@ async function create(req, res) {
         });
 
         if (foundTwo) {
-            return res.status(200).send({
-                ...foundTwo.toObject(),
-                already_exists: true,
-            });
+            return res.status(200).send(foundTwo);
         }
 
         // Crear nuevo chat
@@ -49,10 +43,7 @@ async function create(req, res) {
 
         const chatStorage = await newChat.save();
 
-        return res.status(200).send({
-            ...chatStorage.toObject(),
-            already_exists: false,
-        });
+        return res.status(200).send(chatStorage);
 
     } catch (error) {
         console.error("Error al crear el chat", error);
@@ -80,29 +71,15 @@ async function getAll(req, res) {
 
         for await (const chat of chats) {
             const lastMessage = await ChatMessage.findOne({ chat: chat._id })
-                .sort({ createdAt: -1 })
-                .populate("user");
-            const unreadCount = await ChatMessage.countDocuments({
-                chat: chat._id,
-                user: { $ne: user_id },
-                read_by: { $ne: user_id },
-            });
+                .sort({ createAt: -1 });
 
             arrayChats.push({
                 ...chat._doc,
-                last_message: lastMessage || null,
-                last_message_date: lastMessage?.createdAt || null,
-                unread_count: unreadCount,
+                last_message_date: lastMessage?.createAt || null,
             });
         }
 
-        return res.status(200).send(
-            arrayChats.sort((a, b) => {
-                const dateA = a.last_message_date ? new Date(a.last_message_date).getTime() : 0;
-                const dateB = b.last_message_date ? new Date(b.last_message_date).getTime() : 0;
-                return dateB - dateA;
-            })
-        );
+        return res.status(200).send(arrayChats);
 
     } catch (error) {
         console.error("Error al obtener los chats", error);
@@ -117,23 +94,13 @@ async function getAll(req, res) {
  */
 async function deleteChat(req, res) {
     const chat_id = req.params.id;
-    const { user_id } = req.user;
 
     try {
-        const chat = await Chat.findOne({
-            _id: chat_id,
-            $or: [
-                { participant_one: user_id },
-                { participant_two: user_id },
-            ],
-        });
+        const deleted = await Chat.findByIdAndDelete(chat_id);
 
-        if (!chat) {
+        if (!deleted) {
             return res.status(404).send({ msg: "Chat no encontrado" });
         }
-
-        await ChatMessage.deleteMany({ chat: chat_id });
-        await Chat.findByIdAndDelete(chat_id);
 
         return res.status(200).send({ msg: "Chat eliminado" });
 
